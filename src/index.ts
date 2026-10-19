@@ -740,13 +740,19 @@ export default {
         filterNotices = url.searchParams.get('filter_notices') !== '0' && url.searchParams.get('drop_announcements') !== '0' && url.searchParams.get('notices') !== '1';
         preset = (url.searchParams.get('preset') || 'standard').toLowerCase();
         const groupParam = (url.searchParams.get('group_type') || url.searchParams.get('group_mode') || url.searchParams.get('groups') || '').toLowerCase();
-        if (groupParam === 'area' || groupParam === 'macro') {
-          groupType = 'area';
-        } else if (groupParam === 'country' || groupParam === 'legacy') {
-          groupType = 'country';
-        } else if (groupParam === 'hybrid') {
-          groupType = 'hybrid';
-        }
+        if (
+  groupParam === 'none' &&
+  ['clash', 'meta', 'mihomo'].includes(target)
+) {
+  groupType = 'none';
+}       else if (groupParam === 'area' || groupParam === 'macro') {
+  groupType = 'area';
+}       else if (groupParam === 'country' || groupParam === 'legacy') {
+  groupType = 'country';
+}       else if (groupParam === 'hybrid') {
+  groupType = 'hybrid';
+}
+        
         testUrl = url.searchParams.get('test_url') || 'https://cp.cloudflare.com/generate_204';
         filename = url.searchParams.get('filename') || 'SubConverter';
 
@@ -772,13 +778,18 @@ export default {
           filterNotices = body.filter_notices !== false && body.drop_announcements !== false && body.notices !== true;
           preset = (body.preset || 'standard').toLowerCase();
           const groupParam = String(body.group_type || body.group_mode || body.groups || '').toLowerCase();
-          if (groupParam === 'area' || groupParam === 'macro') {
-            groupType = 'area';
-          } else if (groupParam === 'country' || groupParam === 'legacy') {
-            groupType = 'country';
-          } else if (groupParam === 'hybrid') {
-            groupType = 'hybrid';
-          }
+          if (
+  groupParam === 'none' &&
+  ['clash', 'meta', 'mihomo'].includes(target)
+) {
+  groupType = 'none';
+}         else if (groupParam === 'area' || groupParam === 'macro') {
+  groupType = 'area';
+}         else if (groupParam === 'country' || groupParam === 'legacy') {
+  groupType = 'country';
+}         else if (groupParam === 'hybrid') {
+  groupType = 'hybrid';
+}
           testUrl = body.test_url || 'https://cp.cloudflare.com/generate_204';
           if (body.info_mode) infoStrategy = body.info_mode;
           if (body.token) requestToken = body.token;
