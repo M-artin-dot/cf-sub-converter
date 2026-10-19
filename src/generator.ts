@@ -9,7 +9,7 @@ import { adaptNodeToTarget } from './adapters/target';
 
 export { nodeToClashProxy, nodeToSingBoxOutbound };
 
-export type GroupType = 'hybrid' | 'area' | 'country';
+export type GroupType = 'hybrid' | 'area' | 'country' | 'none';
 
 /**
  * 转换为 Clash Meta / Mihomo 配置文件 (YAML)
@@ -59,6 +59,48 @@ export function toClashMeta(
 
   const proxyNames = proxies.map(p => p.name);
 
+  // 无策略组模式：保留节点，移除所有普通策略组
+  if (groupType === 'none') {
+    config.proxies = proxies;
+
+    // 删除普通策略组以及不再使用的规则集
+    delete config['proxy-groups'];
+    delete config['rule-providers'];
+
+    // 无策略组模式下，规则必须直接指向出口，
+    // 不能继续引用已经删除的策略组。
+    config.rules = [
+      'DOMAIN,localhost,DIRECT',
+      'DOMAIN-SUFFIX,localhost,DIRECT',
+      'DOMAIN-SUFFIX,local,DIRECT',
+      'DOMAIN-SUFFIX,lan,DIRECT',
+      'DOMAIN-SUFFIX,localdomain,DIRECT',
+      'DOMAIN-SUFFIX,internal,DIRECT',
+      'DOMAIN-SUFFIX,home.arpa,DIRECT',
+      'IP-CIDR,10.0.0.0/8,DIRECT,no-resolve',
+      'IP-CIDR,127.0.0.0/8,DIRECT,no-resolve',
+      'IP-CIDR,169.254.0.0/16,DIRECT,no-resolve',
+      'IP-CIDR,172.16.0.0/12,DIRECT,no-resolve',
+      'IP-CIDR,192.168.0.0/16,DIRECT,no-resolve',
+      'IP-CIDR6,::1/128,DIRECT,no-resolve',
+      'IP-CIDR6,fc00::/7,DIRECT,no-resolve',
+      'IP-CIDR6,fe80::/10,DIRECT,no-resolve',
+      'GEOIP,LAN,DIRECT,no-resolve',
+      'DOMAIN-SUFFIX,cn,DIRECT',
+      'GEOSITE,CN,DIRECT',
+      'GEOIP,CN,DIRECT',
+      proxyNames.length > 0
+        ? `MATCH,${proxyNames[0]}`
+        : 'MATCH,DIRECT'
+    ];
+
+    return yaml.dump(config, {
+      indent: 2,
+      lineWidth: -1,
+      noRefs: true
+    });
+  }
+  
   const presetTokens = (Array.isArray(preset) ? preset : String(preset || '').split(/[,|]/))
     .map(p => p.trim().toLowerCase())
     .filter(Boolean);
